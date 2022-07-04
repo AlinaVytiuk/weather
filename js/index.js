@@ -34,7 +34,7 @@ const weatherCardsWrapper = document.querySelector('.cards__inner');
 
 // get data weather from API
 function getWeatherData(city) {
-    return fetch('http://api.openweathermap.org/data/2.5/weather?q=' + city + '&appid=08d1316ba8742c08076e7425c28c2614')
+    return fetch('https://api.openweathermap.org/data/2.5/weather?q=' + city + '&appid=08d1316ba8742c08076e7425c28c2614')
         .then(function (response) {
             return response.json();
         })
