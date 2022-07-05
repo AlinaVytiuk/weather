@@ -1,10 +1,4 @@
 .secondary {
-    background-color: rgba(34, 48, 60);
-    border-radius: 10px;
-    width: 100%;
-    max-width: 500px;
-    height: 615px;
-    //padding: 25px;
     position: relative;
     overflow: hidden;
 
@@ -26,7 +20,7 @@
             border: none;
             font-size: 16px;
             color: #b9c1c6;
-            padding: 0 1% 0 10%;
+            padding-left: 12%;
             outline: none;
             position: relative;
             z-index: 2;
@@ -72,10 +66,15 @@
             height: 25px;
             position: absolute;
             top: 50%;
-            left: 10px;
+            left: 4%;
             transform: translateY(-50%);
             pointer-events: none;
             z-index: 3;
+
+            @include mobile(down) {
+                width: 15px;
+                height: 15px;
+            }
         }
     }
 }
@@ -88,16 +87,26 @@
     &__inner {
         gap: 20px;
         flex-wrap: wrap;
+        
+        @include mobile(down) {
+            gap: 15px;
+        }
     }
 
     &__card {
         padding: 10px 15px;
         background-color: rgb(51, 70, 86);
         border-radius: 10px;
-        //max-width: 215px;
         width: calc(50% - 10px);
         cursor: pointer;
         position: relative;
+        min-height: 100px;
+        align-items: stretch;
+        justify-content: space-between;
+
+        @include mobile(down) {
+            padding: 10px;
+        }
 
         &:hover .cards__card-remove {
             opacity: 1;
@@ -130,25 +139,41 @@
 
     .main-info {
         &__location {
-            font-size: 16px;
+            font-size: 14px;
             color: gray;
-            max-width: 65px;
             width: 100%;
             text-align: left;
+
+            @include mobile(down) {
+                font-size: 12px;
+            }
         }
 
         &__summary {
-            gap: 25px;
+            gap: 15px;
             padding: 0;
+
+            @include mobile(down) {
+                gap: 10px;
+            }
         }
 
         &__wrapper-image {
-            width: 100px;
-            height: 100px;
+            max-width: 80px;
+            height: auto;
+
+            @include mobile(down) {
+                width: 100%;
+            }
         }
 
         &__temperature {
             font-size: 28px;
+            width: 100%;
+
+            @include mobile(down) {
+                font-size: 20px;
+            }
         }
     }
 
@@ -157,12 +182,21 @@
 
         span {
             font-size: 12px;
+
+            @include mobile(down) {
+                font-size: 10px;
+            }
         }
 
         svg {
             margin-right: 5px;
             width: 20px;
             height: 20px;
+
+            @include mobile(down) {
+                width: 12px;
+                height: 12px;
+            }
         }
     }
 }

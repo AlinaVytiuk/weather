@@ -97,13 +97,13 @@ function displayDataSecondary(data, weatherCard) {
 }
 
 //page output
-function displayDataBasic(data) {
-    const basic = document.querySelector('.basic');
+function displayDataMain(data) {
+    const main = document.querySelector('.main');
 
     //temperature
-    const temperature = basic.querySelector('.main-info__temperature-value');
-    const temperatureTypeValue = basic.querySelector('[data-field="temperatureType"] .settings__item-content-value');
-    const degType = basic.querySelector('.deg-type');
+    const temperature = main.querySelector('.main-info__temperature-value');
+    const temperatureTypeValue = main.querySelector('[data-field="temperatureType"] .settings__item-content-value');
+    const degType = main.querySelector('.deg-type');
     const tType = window.stateSelect.temperatureType;
     const kTemp = Math.round(data.temp);
     temperature.innerText = tType === 'c' ? kToC(kTemp) : kToF(kTemp);
@@ -111,28 +111,28 @@ function displayDataBasic(data) {
     temperatureTypeValue.innerText = dictionary[tType];
 
     //windSpeed
-    const windSpeed = basic.querySelector('.wind-speed .value');
-    const windSpeedTypeValue = basic.querySelector('[data-field="windSpeedType"] .settings__item-content-value');
+    const windSpeed = main.querySelector('.wind-speed .value');
+    const windSpeedTypeValue = main.querySelector('[data-field="windSpeedType"] .settings__item-content-value');
     const speedType = window.stateSelect.windSpeedType;
     const speedMs = Math.round(data.wind)
     windSpeed.innerText =  speedType === 'm/s' ? speedMs + ' ' + speedType: convertSpeed(speedMs) + ' ' + speedType;
     windSpeedTypeValue.innerText = speedType;
 
     //humidity
-    const humidity = basic.querySelector('.humidity .value');
+    const humidity = main.querySelector('.humidity .value');
     humidity.innerText = data.humidity + ' %';
 
     //location
-    const location = basic.querySelector('.main-info__location');
+    const location = main.querySelector('.main-info__location');
     location.innerHTML = data.name;
 
     //pressure
-    const pressure = basic.querySelector('.pressure .value');
+    const pressure = main.querySelector('.pressure .value');
     pressure.innerText = atmosphere(data.pressure) + ' mmHg';
 
     //search image and add description state weather
-    const weatherImage = basic.querySelector('.main-info__wrapper-image img');
-    const weatherCondition = basic.querySelector('.main-info__condition-title');
+    const weatherImage = main.querySelector('.main-info__wrapper-image img');
+    const weatherCondition = main.querySelector('.main-info__condition-title');
 
     console.log(data)
 
@@ -140,13 +140,13 @@ function displayDataBasic(data) {
     weatherImage.src = 'images/icons/' + data.weather.trim().toLowerCase() + '.svg';
 
     //sunrise
-    const dayUp = basic.querySelector('.day-up');
+    const dayUp = main.querySelector('.day-up');
     let sunriseTimeStamp = data.sunrise;
     let sunrise = new Date(sunriseTimeStamp * 1000);
     dayUp.innerHTML = `${sunrise.getHours()}:${sunrise.getMinutes()} AM`;
 
     //sunset
-    const dayDown = basic.querySelector('.day-down');
+    const dayDown = main.querySelector('.day-down');
     let sunsetTimeStamp = data.sunset;
     let sunset = new Date(sunsetTimeStamp * 1000);
     dayDown.innerHTML = `${sunset.getHours()}:${sunset.getMinutes()} PM`;
@@ -156,7 +156,7 @@ function update(firstLoad = false) {
     const data = window.weatherData;
     let mainCityData = Object.values(data)[0];
     console.log(mainCityData)
-    displayDataBasic(mainCityData);
+    displayDataMain(mainCityData);
 
     if (firstLoad) {
         weatherCardsWrapper.innerHTML = '';
@@ -318,7 +318,7 @@ search.addEventListener('keypress', function(event) {
 
 function addCard(city, data) {
     const newCard = document.createElement('article');
-    newCard.className = 'cards__card';
+    newCard.className = 'cards__card flex-column';
     newCard.dataset.city = city;
 
     const removeButton = document.createElement('button');
@@ -343,7 +343,7 @@ function addCard(city, data) {
                 <p class="main-info__location">${city}</p>
             </div>
             <div class="main-info__wrapper-image flex">
-                <img src="images/icons/cloud.svg">
+                <img src="images/icons/cloud.svg" alt="summary">
             </div>
             </div>
             <div class="details flex">
@@ -369,7 +369,7 @@ function addCard(city, data) {
 
     newCard.prepend(removeButton);
     newCard.addEventListener('click', function() {
-        displayDataBasic(window.weatherData[city]);
+        displayDataMain(window.weatherData[city]);
     });
 
     weatherCardsWrapper.append(newCard);
@@ -394,7 +394,7 @@ setInterval(async () => {
     setWeatherDataToStorage(data);
 
     update();
-}, 60000);
+}, 120000);
 
 function setWeatherDataToStorage(data) {
     localStorage.setItem('weatherData', JSON.stringify(data));
