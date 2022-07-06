@@ -16,6 +16,7 @@ dateDayName.innerHTML = new Intl.DateTimeFormat('en-US', options).format(nowDate
 const settingsItems = document.querySelectorAll('.settings__item');
 const settingsItemSelects = document.querySelectorAll('.settings__item-select');
 const settingsItemButtons = document.querySelectorAll('.settings__item-select button');
+const weatherCardsWrapper = document.querySelector('.cards__inner');
 
 const dictionary = {
     'c': 'Celsius',
@@ -27,12 +28,10 @@ let stateSelect = {
     windSpeedType: 'm/s'
 }
 
-let cities = ['kyiv', 'london', 'new york'];
+let cities = ['kyiv', 'london', 'paris'];
 
-const weatherCardsWrapper = document.querySelector('.cards__inner');
-// const weatherCards = document.querySelectorAll('.cards__card');
 
-// get data weather from API
+// get data weather
 function getWeatherData(city) {
     return fetch('https://api.openweathermap.org/data/2.5/weather?q=' + city + '&appid=08d1316ba8742c08076e7425c28c2614')
         .then(function (response) {
@@ -44,6 +43,64 @@ function getWeatherData(city) {
         // .catch()
 }
 
+// get promise by specific cities
+function getWeatherDataFromApi() {
+    let promises = [];
+
+    cities.forEach(city => {
+        promises.push(getWeatherData(city));
+    });
+
+    return Promise.all(promises).then(values => {
+        return values;
+    });
+}
+
+setInterval(async () => {
+    let data = await getWeatherDataFromApi();
+    data = formatWeatherData(data);
+    setWeatherDataToStorage(data);
+
+    update();
+}, 120000);
+
+function formatWeatherData(data) {
+    let weatherData = {};
+
+    data.forEach(item => {
+        weatherData[item.name.toLowerCase()] = formatWeatherDataSingle(item);
+    });
+
+    return weatherData;
+}
+
+//format data weather
+function formatWeatherDataSingle(data) {
+    return {
+        humidity: data.main.humidity,
+        pressure: data.main.pressure,
+        temp: data.main.temp,
+        name: data.name,
+        sunrise: data.sys.sunrise,
+        sunset: data.sys.sunset,
+        weather: data.weather[0].main,
+        wind: data.wind.speed,
+    }
+}
+
+//get data from api if data in storage not found
+async function getData() {
+    let data = getWeatherDataFromStorage();
+
+    if (!data) {
+        data = await getWeatherDataFromApi();
+        data = formatWeatherData(data);
+        setWeatherDataToStorage(data);
+    }
+
+    return data;
+}
+
 Array.prototype.merge = function(data) {
     let tempData = this.concat(data)
 
@@ -51,10 +108,8 @@ Array.prototype.merge = function(data) {
 }
 
 window.addEventListener('DOMContentLoaded', async function() {
-    //результат ф выше мы присваиваем в виндовс, чтоб там хранилось, чтоб не тянуть со стоража постоянно
     window.weatherData = await getData();
     cities = cities.merge(Object.keys(window.weatherData))
-    console.log(cities)
 
     let stateSelectFromStorage = localStorage.getItem('stateSelect');
 
@@ -68,35 +123,6 @@ window.addEventListener('DOMContentLoaded', async function() {
     update(true);
 })
 
-function displayDataSecondary(data, weatherCard) {
-    //temperature
-    const temperature = weatherCard.querySelector('.main-info__temperature-value');
-    const degType = weatherCard.querySelector('.deg-type');
-    const tType = window.stateSelect.temperatureType;
-    const kTemp = Math.round(data.temp);
-    temperature.innerText = tType === 'c' ? kToC(kTemp) : kToF(kTemp);
-    degType.innerText = tType.toUpperCase();
-
-    //windSpeed
-    const windSpeed = weatherCard.querySelector('.wind-speed .value');
-    const speedType = window.stateSelect.windSpeedType;
-    const speedMs = Math.round(data.wind)
-    windSpeed.innerText =  speedType === 'm/s' ? speedMs + ' ' + speedType : convertSpeed(speedMs) + ' ' + speedType;
-
-    //humidity
-    const humidity = weatherCard.querySelector('.humidity .value');
-    humidity.innerText = data.humidity + ' %';
-
-    //location
-    const location = weatherCard.querySelector('.main-info__location');
-    location.innerHTML = data.name;
-
-    //search image and add description state weather
-    const weatherImage = weatherCard.querySelector('.main-info__wrapper-image img');
-    weatherImage.src = 'images/icons/' + data.weather.trim().toLowerCase() + '.svg';
-}
-
-//page output
 function displayDataMain(data) {
     const main = document.querySelector('.main');
 
@@ -134,8 +160,6 @@ function displayDataMain(data) {
     const weatherImage = main.querySelector('.main-info__wrapper-image img');
     const weatherCondition = main.querySelector('.main-info__condition-title');
 
-    console.log(data)
-
     weatherCondition.innerText = data.weather;
     weatherImage.src = 'images/icons/' + data.weather.trim().toLowerCase() + '.svg';
 
@@ -152,10 +176,37 @@ function displayDataMain(data) {
     dayDown.innerHTML = `${sunset.getHours()}:${sunset.getMinutes()} PM`;
 }
 
+function displayDataSecondary(data, weatherCard) {
+    //temperature
+    const temperature = weatherCard.querySelector('.main-info__temperature-value');
+    const degType = weatherCard.querySelector('.deg-type');
+    const tType = window.stateSelect.temperatureType;
+    const kTemp = Math.round(data.temp);
+    temperature.innerText = tType === 'c' ? kToC(kTemp) : kToF(kTemp);
+    degType.innerText = tType.toUpperCase();
+
+    //windSpeed
+    const windSpeed = weatherCard.querySelector('.wind-speed .value');
+    const speedType = window.stateSelect.windSpeedType;
+    const speedMs = Math.round(data.wind)
+    windSpeed.innerText =  speedType === 'm/s' ? speedMs + ' ' + speedType : convertSpeed(speedMs) + ' ' + speedType;
+
+    //humidity
+    const humidity = weatherCard.querySelector('.humidity .value');
+    humidity.innerText = data.humidity + ' %';
+
+    //location
+    const location = weatherCard.querySelector('.main-info__location');
+    location.innerHTML = data.name;
+
+    //search image and add description state weather
+    const weatherImage = weatherCard.querySelector('.main-info__wrapper-image img');
+    weatherImage.src = 'images/icons/' + data.weather.trim().toLowerCase() + '.svg';
+}
+
 function update(firstLoad = false) {
     const data = window.weatherData;
     let mainCityData = Object.values(data)[0];
-    console.log(mainCityData)
     displayDataMain(mainCityData);
 
     if (firstLoad) {
@@ -172,26 +223,6 @@ function update(firstLoad = false) {
     })
 
     localStorage.setItem('stateSelect', JSON.stringify(window.stateSelect));
-}
-
-//convert Kelvin to Celsius
-function kToC(k) {
-    return Math.round(k - 273);
-}
-
-//convert Kelvin to Fahrenheit
-function kToF(k) {
-    return Math.round(kToC(k) * 9/5 + 32);
-}
-
-//convert m/s to kph
-function convertSpeed(value) {
-    return Math.round(value * 3.6)
-}
-
-//convert atmosphere
-function atmosphere(gPa) {
-    return Math.round(gPa * .75)
 }
 
 function fadeIn(el, time) {
@@ -331,7 +362,16 @@ function addCard(city, data) {
 
     removeButton.addEventListener('click', function(event) {
         event.stopPropagation();
+        console.dir(removeButton)
+        console.log(window.weatherData[city])
+
+        if (cities.length === 1) {
+            removeButton.hidden = true;
+            return;
+        }
+
         delete window.weatherData[city];
+        cities = Object.keys(window.weatherData);
         setWeatherDataToStorage(window.weatherData);
         newCard.remove();
     })
@@ -376,66 +416,32 @@ function addCard(city, data) {
     displayDataSecondary(data, newCard);
 }
 
-function getWeatherDataFromApi() {
-    let promises = [];
-
-    cities.forEach(city => {
-        promises.push(getWeatherData(city));
-    });
-
-    return Promise.all(promises).then(values => {
-        return values;
-    });
-}
-
-setInterval(async () => {
-    let data = await getWeatherDataFromApi();
-    data = formatWeatherData(data);
-    setWeatherDataToStorage(data);
-
-    update();
-}, 120000);
-
+// write data to storage
 function setWeatherDataToStorage(data) {
     localStorage.setItem('weatherData', JSON.stringify(data));
 }
 
+// get data from storage
 function getWeatherDataFromStorage() {
     return JSON.parse(localStorage.getItem('weatherData'));
 }
 
-function formatWeatherDataSingle(data) {
-    return {
-        humidity: data.main.humidity,
-        pressure: data.main.pressure,
-        temp: data.main.temp,
-        name: data.name,
-        sunrise: data.sys.sunrise,
-        sunset: data.sys.sunset,
-        weather: data.weather[0].main,
-        wind: data.wind.speed,
-    }
+//convert Kelvin to Celsius
+function kToC(k) {
+    return Math.round(k - 273);
 }
 
-function formatWeatherData(data) {
-    let weatherData = {};
-
-    data.forEach(item => {
-        weatherData[item.name.toLowerCase()] = formatWeatherDataSingle(item);
-    });
-
-    return weatherData;
+//convert Kelvin to Fahrenheit
+function kToF(k) {
+    return Math.round(kToC(k) * 9/5 + 32);
 }
 
-//если нет в стореже, то берем с АПИ (асинхронно)
-async function getData() {
-    let data = getWeatherDataFromStorage();
+//convert m/s to km/h
+function convertSpeed(mS) {
+    return Math.round(mS * 3.6)
+}
 
-    if (!data) {
-        data = await getWeatherDataFromApi();
-        data = formatWeatherData(data);
-        setWeatherDataToStorage(data);
-    }
-
-    return data;
+//convert atmosphere
+function atmosphere(gPa) {
+    return Math.round(gPa * .75)
 }

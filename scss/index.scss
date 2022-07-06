@@ -1,8 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 @import "default";
-@import "adaptive";
+@import "mixins";
+
 @import "general";
-@import "main";
-@import "secondary";
+
+@import "elements/main-card";
+@import "elements/search";
+@import "elements/small-cards";
 
