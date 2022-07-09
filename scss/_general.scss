@@ -49,6 +49,8 @@ body {
 
 .main-info {
     &__current-day {
+        margin-bottom: 10px;
+
         & * {
             font-weight: 300;
             font-size: 14px;
@@ -59,6 +61,8 @@ body {
     &__location {
         font-size: 22px;
         text-align: center;
+        max-width: 50%;
+        margin: 0 auto;
     }
 
     &__summary {
@@ -72,8 +76,8 @@ body {
     }
 
     &__wrapper-image{
-        width: 180px;
-        height: 180px;
+        width: 170px;
+        height: 170px;
     }
 
     &__temperature {
@@ -109,5 +113,37 @@ body {
 
     svg {
         margin-right: 10px;
+    }
+}
+
+.preloader {
+    position: relative;
+
+    &:after {
+        content: "";
+        width: calc(100% + 4px);
+        height: calc(100% + 4px);
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        border-radius: 8px;
+        background: linear-gradient(to right, #22303c, #334656, #22303c);
+        background-position: 0 0;
+        background-size: 200% 100%;
+        animation-name: animation;
+        animation-duration: 3s;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        animation-fill-mode: both;
+
+    }
+}
+
+@keyframes animation {
+    0% {
+        background-position: 0 0;
+    }
+    50% {
+        background-position: 100% 0;
     }
 }

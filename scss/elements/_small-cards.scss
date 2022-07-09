@@ -63,6 +63,7 @@
             color: gray;
             width: 100%;
             text-align: left;
+            margin: 0;
 
             @include mobile(down) {
                 font-size: 12px;
@@ -72,6 +73,7 @@
         &__summary {
             gap: 15px;
             padding: 0;
+            margin-bottom: 5px;
 
             @include mobile(down) {
                 gap: 10px;

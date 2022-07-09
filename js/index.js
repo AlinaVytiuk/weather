@@ -129,6 +129,11 @@ window.addEventListener('DOMContentLoaded', async function() {
 
 function displayDataMain(data) {
     const main = document.querySelector('.main');
+    const preloaders = main.querySelectorAll('.preloader');
+
+    preloaders.forEach(preloader => {
+        preloader.classList.remove('preloader');
+    })
 
     //temperature
     const temperature = main.querySelector('.main-info__temperature-value');
@@ -181,6 +186,12 @@ function displayDataMain(data) {
 }
 
 function displayDataSecondary(data, weatherCard) {
+    const preloaders = weatherCard.querySelectorAll('.preloader');
+
+    preloaders.forEach(preloader => {
+        preloader.classList.remove('preloader');
+    })
+
     //temperature
     const temperature = weatherCard.querySelector('.main-info__temperature-value');
     const degType = weatherCard.querySelector('.deg-type');
@@ -237,16 +248,16 @@ function addCard(city, data) {
 
     newCard.innerHTML = `
         <div class="main-info__summary flex">
-            <div class="main-info__temperature">
+            <div class="main-info__temperature preloader">
                 <span class="main-info__temperature-value"></span><sup>°</sup><span class="deg-type"></span>
                 <p class="main-info__location">${city}</p>
             </div>
-            <div class="main-info__wrapper-image flex">
+            <div class="main-info__wrapper-image preloader flex">
                 <img src="images/icons/cloud.svg" alt="summary">
             </div>
-            </div>
-            <div class="details flex">
-                <article class="humidity flex">
+        </div>
+        <div class="details flex">
+                <article class="humidity preloader flex">
                     <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 512 512" xml:space="preserve">
                         <path d="M344.864,112.832c-26.176-33.408-53.248-67.904-75.072-104.96C266.912,3.008,261.664,0,256,0s-10.912,3.008-13.76,7.872 c-21.824,37.024-48.896,71.552-75.072,104.928C114.112,180.448,64,244.352,64,320c0,105.888,86.112,192,192,192 s192-86.112,192-192C448,244.384,397.92,180.48,344.864,112.832z M256,480c-88.224,0-160-71.776-160-160 c0-64.608,46.784-124.256,96.352-187.456c21.632-27.584,43.84-55.904,63.648-86.24c19.808,30.336,42.016,58.688,63.648,86.272 C369.216,195.744,416,255.424,416,320C416,408.224,344.224,480,256,480z"/>
                         <path d="M208,192c-26.464,0-48,21.536-48,48s21.536,48,48,48s48-21.536,48-48S234.464,192,208,192z M208,256 c-8.832,0-16-7.168-16-16c0-8.832,7.168-16,16-16c8.832,0,16,7.168,16,16C224,248.832,216.832,256,208,256z"/>
@@ -255,7 +266,7 @@ function addCard(city, data) {
                     </svg>
                     <span class="value"></span>
                 </article>
-                <article class="wind-speed flex">
+                <article class="wind-speed preloader flex">
                     <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 365.447 365.447" xml:space="preserve">
                         <path d="M306.069,189.427H7.5c-4.143,0-7.5-3.358-7.5-7.5s3.357-7.5,7.5-7.5h297.119c0.469-0.092,0.954-0.14,1.45-0.14 c24.47,0,44.378-19.908,44.378-44.378S330.539,85.53,306.069,85.53s-44.378,19.908-44.378,44.378c0,4.142-3.357,7.5-7.5,7.5 s-7.5-3.358-7.5-7.5c0-32.741,26.637-59.378,59.378-59.378s59.378,26.637,59.378,59.378c0,32.224-25.801,58.535-57.829,59.358 C307.118,189.372,306.601,189.427,306.069,189.427z"/>
                         <path d="M152.283,137.479H7.5c-4.143,0-7.5-3.358-7.5-7.5s3.357-7.5,7.5-7.5h143.333c0.469-0.092,0.954-0.14,1.45-0.14 c24.47,0,44.378-19.908,44.378-44.378s-19.908-44.378-44.378-44.378c-24.471,0-44.379,19.908-44.379,44.378 c0,4.142-3.357,7.5-7.5,7.5s-7.5-3.358-7.5-7.5c0-32.741,26.638-59.378,59.379-59.378s59.378,26.637,59.378,59.378 c0,32.224-25.801,58.535-57.829,59.358C153.332,137.423,152.814,137.479,152.283,137.479z"/>
@@ -349,11 +360,77 @@ settingsItems.forEach(settingsItem => {
         select.classList.toggle('active');
     })
 })
+//search
+const search = document.querySelector('#search');
+const searchClose = document.querySelector('.search-close');
+const searchButton = document.querySelector('.search-button');
+
+searchClose.addEventListener('click', function() {
+    search.value = '';
+    this.classList.remove('active');
+    search.focus();
+});
+
+function searchCity(searchValue) {
+    const searchIcon = searchButton.querySelector('svg:first-child');
+    const searchLoader = searchButton.querySelector('svg:last-child');
+
+    if (cities.includes(searchValue)) {
+        search.value = '';
+        alert('City already added');
+
+        return;
+    }
+    searchIcon.classList.remove('active');
+    searchLoader.classList.add('active');
+
+    getWeatherData(searchValue).then(result => {
+        if (result.cod !== 200) {
+            alert('City not found');
+            searchIcon.classList.add('active');
+            searchLoader.classList.remove('active');
+
+            return;
+        }
+
+        searchIcon.classList.add('active');
+        searchLoader.classList.remove('active');
+
+        const data = formatWeatherDataSingle(result);
+        addCard(searchValue, data);
+        window.weatherData[searchValue] = data;
+        cities.push(searchValue);
+        setWeatherDataToStorage(window.weatherData);
+        search.value = '';
+    });
+}
+
+searchButton.addEventListener('click', function(event) {
+    let searchValue = search.value.toLowerCase();
+    searchCity(searchValue)
+});
+
+search.addEventListener('keyup', function(event) {
+    let searchValue = this.value.toLowerCase();
+
+    if (searchValue.length > 1) {
+        searchClose.classList.add('active');
+    } else {
+        searchClose.classList.remove('active');
+    }
+
+    if (event.code !== 'Enter' || !searchValue) {
+        return;
+    }
+
+    searchCity(searchValue);
+});
 
 document.body.addEventListener('click', function() {
     settingsItemSelects.forEach(settingsItemSelect => {
         fadeOut(settingsItemSelect, 200)
         settingsItemSelect.classList.remove('active');
+        searchClose.classList.remove('active');
     })
 })
 
@@ -369,53 +446,6 @@ settingsItemButtons.forEach(settingsItemButton => {
         window.stateSelect[stateField] = this.dataset.type;
         update();
     })
-})
-
-//search
-const search = document.querySelector('#search');
-const searchClose = document.querySelector('.search-close');
-
-searchClose.addEventListener('click', function() {
-    search.value = '';
-    this.classList.remove('active');
-    search.focus();
-})
-
-search.addEventListener('keyup', function(event) {
-    let searchValue = this.value.toLowerCase();
-
-    if (searchValue.length > 1) {
-        searchClose.classList.add('active');
-    } else {
-        searchClose.classList.remove('active');
-    }
-
-    if (event.code !== 'Enter' || !searchValue) {
-        return;
-    }
-
-    if (cities.includes(searchValue)) {
-        this.value = '';
-        alert('City already added');
-
-        return;
-    }
-
-    getWeatherData(searchValue).then(result => {
-        if (result.cod !== 200) {
-            alert('City not found');
-
-            return;
-        }
-
-        const data = formatWeatherDataSingle(result);
-        addCard(searchValue, data);
-        window.weatherData[searchValue] = data;
-        cities.push(searchValue);
-        setWeatherDataToStorage(window.weatherData);
-    }).finally(() => {
-        this.value = '';
-    });
 })
 
 // write data to storage
